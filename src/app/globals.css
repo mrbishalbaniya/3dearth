@@ -1,26 +1,1633 @@
+@import url("https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=IBM+Plex+Sans:wght@300;400;500&display=swap");
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --earth-bg-0: #02040a;
+  --earth-bg-1: #07101f;
+  --earth-glass: rgba(10, 18, 36, 0.55);
+  --earth-glass-border: rgba(180, 210, 255, 0.14);
+  --earth-text: #e8f1ff;
+  --earth-muted: rgba(200, 220, 255, 0.55);
+  --earth-accent: #6eb6ff;
+  --earth-accent-2: #7ef0d0;
+  --font-display: "Syne", sans-serif;
+  --font-body: "IBM Plex Sans", sans-serif;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--earth-bg-0);
+  --color-foreground: var(--earth-text);
+  --font-sans: var(--font-body);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 30%, #0a1630 0%, #02040a 55%, #000 100%);
+  color: var(--earth-text);
+  font-family: var(--font-body);
+}
+
+/* ─── Viewport ─── */
+
+.earth-viewport {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 40%, rgba(30, 60, 120, 0.25), transparent 70%),
+    radial-gradient(ellipse at center, #050a18 0%, #010308 100%);
+}
+
+.earth-viewport--fs {
+  width: 100vw;
+  height: 100vh;
+}
+
+.earth-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+}
+
+/* ─── Loading ─── */
+
+.earth-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-content: center;
+  gap: 0.75rem;
+  background: radial-gradient(circle at 50% 45%, #0b1830, #02040a 70%);
+  text-align: center;
+}
+
+.earth-loading__orb {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 0.5rem;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, #8ec8ff, #1a4a8a 45%, #061018 70%);
+  box-shadow:
+    0 0 40px rgba(80, 160, 255, 0.35),
+    inset -10px -10px 20px rgba(0, 0, 0, 0.45);
+  animation: earth-orb-spin 4s linear infinite;
+}
+
+.earth-loading__label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  color: var(--earth-muted);
+}
+
+.earth-loading__bar {
+  width: min(220px, 60vw);
+  height: 2px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.earth-loading__fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--earth-accent), var(--earth-accent-2));
+  transition: width 0.35s ease;
+}
+
+.earth-loading__pct {
+  font-size: 0.75rem;
+  color: var(--earth-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes earth-orb-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (prefers-reduced-motion: reduce) {
+  .earth-loading__orb {
+    animation: none;
+  }
+}
+
+/* ─── HUD glass panels ─── */
+
+.earth-hud {
+  position: absolute;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.earth-hud--brand {
+  top: 1.25rem;
+  left: 1.5rem;
+}
+
+.earth-brand {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  letter-spacing: 0.22em;
+  line-height: 1;
+  background: linear-gradient(120deg, #f0f7ff 20%, #7eb8ff 70%, #7ef0d0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.earth-brand-sub {
+  margin-top: 0.35rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--earth-muted);
+}
+
+.earth-zoom-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--earth-glass-border);
+  background: var(--earth-glass);
+  backdrop-filter: blur(12px);
+}
+
+.earth-zoom-badge__level {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--earth-accent-2);
+  letter-spacing: 0.08em;
+}
+
+.earth-zoom-badge__name {
+  font-size: 0.65rem;
+  color: var(--earth-text);
+  letter-spacing: 0.04em;
+}
+
+.earth-live-badge {
+  margin-top: 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  background: rgba(30, 58, 110, 0.55);
+  color: #bfdbfe;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.earth-live-badge__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.9);
+  animation: earth-live-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes earth-live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.75);
+  }
+}
+
+.earth-user-pin {
+  padding: 0.15rem 0.4rem;
+  border-radius: 6px;
+  background: rgba(30, 64, 120, 0.85);
+  border: 1px solid rgba(147, 197, 253, 0.45);
+  color: #e0f2fe;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.earth-meta--loading .earth-meta__value {
+  color: var(--earth-accent);
+  animation: earth-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes earth-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* Zoom labels */
+.earth-label {
+  white-space: nowrap;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  color: #f2f7ff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85);
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.92;
+  animation: earth-label-in 0.45s ease;
+}
+
+.earth-label--continent {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.earth-label--country {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.earth-label--city {
+  font-size: 0.7rem;
+  font-weight: 500;
+  background: rgba(8, 14, 28, 0.35);
+}
+
+.earth-label--street {
+  font-size: 0.62rem;
+  font-weight: 400;
+  background: rgba(8, 14, 28, 0.45);
+  border: 1px solid rgba(180, 210, 255, 0.12);
+}
+
+@keyframes earth-label-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 0.92;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .earth-label {
+    animation: none;
+  }
+  .earth-meta--loading .earth-meta__value {
+    animation: none;
+  }
+}
+
+.earth-hud--zoom {
+  top: 50%;
+  right: 1.25rem;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  pointer-events: auto;
+}
+
+/* ─── Layer sidebar ─── */
+
+.earth-sidebar-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 28;
+}
+
+.earth-sidebar-fab {
+  position: absolute;
+  top: 5.5rem;
+  left: 1.25rem;
+  z-index: 30;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--earth-glass-border);
+  background: var(--earth-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: var(--earth-text);
+  font-size: 1rem;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.earth-sidebar-fab:hover,
+.earth-sidebar-fab--open {
+  border-color: rgba(110, 182, 255, 0.45);
+  background: rgba(20, 40, 70, 0.75);
+}
+
+.earth-sidebar {
+  position: absolute;
+  top: 5.5rem;
+  left: 4.4rem;
+  z-index: 28;
+  width: min(280px, calc(100vw - 5.5rem));
+  max-height: calc(100dvh - 8rem);
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: var(--earth-glass);
+  border: 1px solid var(--earth-glass-border);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+.earth-sidebar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 0.95rem 0.55rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.earth-sidebar__title {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--earth-text);
+}
+
+.earth-sidebar__sub {
+  font-size: 0.6rem;
+  color: var(--earth-muted);
+  margin-top: 0.15rem;
+}
+
+.earth-sidebar__scroll {
+  overflow: auto;
+  padding: 0.35rem 0.55rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.earth-sidebar__group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin-top: 0.35rem;
+}
+
+.earth-sidebar__group-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--earth-muted);
+  margin: 0.15rem 0 0.1rem 0.15rem;
+}
+
+.earth-acc__head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.35rem;
+  border: none;
+  background: transparent;
+  color: var(--earth-text);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.earth-acc__head:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.earth-acc__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--earth-muted);
+  font-size: 0.65rem;
+}
+
+.earth-acc__badge {
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  background: rgba(110, 182, 255, 0.15);
+  color: rgba(180, 210, 240, 0.9);
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.earth-acc__chevron {
+  width: 0.9rem;
+  text-align: center;
+  opacity: 0.7;
+}
+
+.earth-acc__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.15rem 0.2rem 0.55rem;
+}
+
+.earth-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.35rem 0.25rem;
+  border: none;
+  background: transparent;
+  color: var(--earth-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 8px;
+  transition: color 0.2s, background 0.15s;
+}
+
+.earth-switch:hover {
+  color: var(--earth-text);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.earth-switch--on {
+  color: var(--earth-text);
+}
+
+.earth-switch__track {
+  position: relative;
+  flex-shrink: 0;
+  width: 28px;
+  height: 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.earth-switch--on .earth-switch__track {
+  background: rgba(126, 240, 208, 0.35);
+  border-color: rgba(126, 240, 208, 0.45);
+}
+
+.earth-switch__thumb {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(220, 230, 240, 0.75);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.earth-switch--on .earth-switch__thumb {
+  transform: translateX(12px);
+  background: var(--earth-accent-2);
+}
+
+.earth-switch__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.earth-switch__hint {
+  font-size: 0.55rem;
+  color: var(--earth-muted);
+  letter-spacing: 0.04em;
+}
+
+.earth-gis-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.earth-basemap-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.15rem;
+}
+
+.earth-weather-card {
+  margin-top: 0.45rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  background: rgba(8, 24, 48, 0.55);
+  border: 1px solid rgba(110, 182, 255, 0.18);
+}
+
+.earth-weather-card__label {
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--earth-muted);
+}
+
+.earth-weather-card__value {
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+  color: var(--earth-text);
+}
+
+.earth-weather-card__meta {
+  margin-top: 0.15rem;
+  font-size: 0.65rem;
+  color: var(--earth-muted);
+}
+
+.earth-weather-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.earth-weather-panel__hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.65rem;
+  line-height: 1.35;
+  color: var(--earth-muted);
+}
+
+.earth-weather-card--rich {
+  margin-top: 0.35rem;
+}
+
+.earth-weather-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem 0.55rem;
+  margin-top: 0.45rem;
+}
+
+.earth-weather-grid span {
+  display: block;
+  font-size: 0.52rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--earth-muted);
+}
+
+.earth-weather-grid strong {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--earth-text);
+}
+
+.earth-debug {
+  position: absolute;
+  top: 5.5rem;
+  right: 1.25rem;
+  z-index: 30;
+  width: min(240px, 90vw);
+  padding: 0.75rem 0.85rem;
+  border-radius: 12px;
+  background: rgba(6, 14, 28, 0.82);
+  border: 1px solid rgba(110, 182, 255, 0.25);
+  backdrop-filter: blur(16px);
+  color: var(--earth-text);
+  font-size: 0.65rem;
+  pointer-events: none;
+}
+
+.earth-debug__title {
+  font-family: var(--font-display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--earth-muted);
+  margin-bottom: 0.45rem;
+}
+
+.earth-debug__grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.2rem 0.75rem;
+  margin: 0;
+}
+
+.earth-debug__grid dt {
+  color: var(--earth-muted);
+}
+
+.earth-debug__grid dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.earth-search {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.earth-search__input {
+  width: 100%;
+  padding: 0.4rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid var(--earth-glass-border);
+  background: rgba(8, 20, 40, 0.75);
+  color: var(--earth-text);
+  font-size: 0.75rem;
+}
+
+.earth-search__input:focus {
+  outline: 1px solid rgba(110, 182, 255, 0.45);
+}
+
+.earth-search__status {
+  font-size: 0.6rem;
+  color: var(--earth-muted);
+}
+
+.earth-search__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 140px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.earth-search__hit {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--earth-text);
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.72rem;
+}
+
+.earth-search__hit:hover {
+  border-color: rgba(110, 182, 255, 0.25);
+  background: rgba(20, 40, 70, 0.55);
+}
+
+.earth-search__hit-kind {
+  color: var(--earth-muted);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.earth-gis-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.35rem;
+}
+
+.earth-gis-group__label {
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--earth-muted);
+  margin: 0.2rem 0 0.15rem;
+}
+
+.earth-toggle__text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.earth-toggle__hint {
+  font-size: 0.58rem;
+  color: var(--earth-muted);
+  letter-spacing: 0.04em;
+}
+
+.earth-toggle--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.earth-hud--compass {
+  top: 1.25rem;
+  right: 1.25rem;
+  pointer-events: none;
+}
+
+.earth-hud--footer {
+  bottom: 0.35rem;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: max-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  pointer-events: none;
+  max-width: min(960px, calc(100vw - 2rem));
+  z-index: 22;
+}
+
+.earth-footer-bar {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  background: var(--earth-glass);
+  border: 1px solid var(--earth-glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  pointer-events: auto;
+  overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: none;
+}
+
+.earth-footer-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.earth-footer-toggle {
+  pointer-events: auto;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--earth-glass-border);
+  background: var(--earth-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: var(--earth-muted);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.earth-footer-toggle:hover {
+  color: var(--earth-text);
+  border-color: rgba(110, 182, 255, 0.4);
+}
+
+/* ─── Virtual gamepad pads ─── */
+
+.earth-hud--pad-left,
+.earth-hud--pad-right {
+  bottom: 5.5rem;
+  pointer-events: none;
+  z-index: 24;
+}
+
+.earth-hud--pad-left {
+  left: 1rem;
+}
+
+.earth-hud--pad-right {
+  right: 4.75rem;
+}
+
+.earth-pad {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  user-select: none;
+  touch-action: none;
+}
+
+.earth-pad__label {
+  font-size: 0.55rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--earth-muted);
+}
+
+.earth-pad__ring {
+  position: relative;
+  width: 118px;
+  height: 118px;
+}
+
+.earth-pad__stick {
+  position: absolute;
+  inset: 22px;
+  border-radius: 50%;
+  background: var(--earth-glass);
+  border: 1px solid var(--earth-glass-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  cursor: grab;
+  touch-action: none;
+}
+
+.earth-pad__stick:active {
+  cursor: grabbing;
+}
+
+.earth-pad__knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  border-radius: 50%;
+  background: linear-gradient(
+    160deg,
+    rgba(140, 190, 240, 0.55),
+    rgba(40, 70, 110, 0.85)
+  );
+  border: 1px solid rgba(180, 210, 255, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  transition: transform 0.05s linear;
+  pointer-events: none;
+}
+
+.earth-pad__dir {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--earth-glass-border);
+  background: rgba(12, 24, 42, 0.72);
+  color: var(--earth-muted);
+  font-size: 0.65rem;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  z-index: 2;
+  touch-action: none;
+}
+
+.earth-pad__dir:hover,
+.earth-pad__dir:active {
+  color: var(--earth-text);
+  border-color: rgba(110, 182, 255, 0.45);
+  background: rgba(30, 55, 90, 0.85);
+}
+
+.earth-pad__dir--up {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.earth-pad__dir--down {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.earth-pad__dir--left {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.earth-pad__dir--right {
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+@media (max-width: 768px) {
+  .earth-hud--pad-left {
+    left: 0.5rem;
+    bottom: 6.5rem;
+  }
+
+  .earth-hud--pad-right {
+    right: 0.5rem;
+    bottom: 6.5rem;
+  }
+
+  .earth-pad__ring {
+    width: 104px;
+    height: 104px;
+  }
+
+  .earth-hud--zoom {
+    bottom: auto;
+  }
+}
+
+.earth-hud--markers {
+  bottom: 1.25rem;
+  right: 1.25rem;
+  width: min(340px, 92vw);
+  padding: 0.85rem;
+  border-radius: 16px;
+  background: var(--earth-glass);
+  border: 1px solid var(--earth-glass-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  pointer-events: auto;
+}
+
+.earth-hud__title {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--earth-muted);
+  margin-bottom: 0.35rem;
+}
+
+.earth-hud__divider {
+  height: 1px;
+  margin: 0.4rem 0;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ─── Buttons ─── */
+
+.earth-btn {
+  pointer-events: auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--earth-glass-border);
+  background: var(--earth-glass);
+  backdrop-filter: blur(14px);
+  color: var(--earth-text);
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+}
+
+.earth-btn:hover {
+  border-color: rgba(110, 182, 255, 0.45);
+  background: rgba(20, 40, 70, 0.75);
+}
+
+.earth-footer-bar .earth-scalebar {
+  min-width: 56px;
+  gap: 0.1rem;
+}
+
+.earth-scalebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.2rem;
+  min-width: 64px;
+  flex-shrink: 0;
+}
+
+.earth-scalebar__bar {
+  height: 3px;
+  border-radius: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(230, 240, 255, 0.95) 8%,
+    rgba(230, 240, 255, 0.95) 92%,
+    transparent 100%
+  );
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.earth-scalebar__label {
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  color: var(--earth-muted);
+  text-align: center;
+}
+
+.earth-btn--active {
+  border-color: rgba(110, 182, 255, 0.65);
+  background: rgba(40, 80, 130, 0.55);
+}
+
+.earth-btn--active {
+  border-color: rgba(126, 240, 208, 0.5);
+  color: var(--earth-accent-2);
+}
+
+.earth-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.35rem 0.25rem;
+  border: none;
+  background: transparent;
+  color: var(--earth-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.2s;
+}
+
+.earth-toggle:hover {
+  color: var(--earth-text);
+}
+
+.earth-toggle--on {
+  color: var(--earth-text);
+}
+
+.earth-toggle__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.earth-toggle--on .earth-toggle__dot {
+  background: var(--earth-accent-2);
+  box-shadow: 0 0 8px rgba(126, 240, 208, 0.7);
+}
+
+.earth-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  font-size: 0.68rem;
+  color: var(--earth-muted);
+}
+
+.earth-slider input {
+  width: 100%;
+  accent-color: var(--earth-accent);
+}
+
+.earth-select {
+  width: 100%;
+  margin-top: 0.15rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--earth-glass-border);
+  background: rgba(8, 20, 40, 0.75);
+  color: var(--earth-text);
+  font-size: 0.72rem;
+}
+
+/* ─── Compass ─── */
+
+.earth-compass {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--earth-glass-border);
+  background: var(--earth-glass);
+  backdrop-filter: blur(12px);
+  display: grid;
+  place-items: center;
+}
+
+.earth-compass__n {
+  position: absolute;
+  top: 6px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #ff8a7a;
+  letter-spacing: 0.05em;
+}
+
+.earth-compass__needle {
+  width: 2px;
+  height: 22px;
+  background: linear-gradient(to bottom, #ff8a7a 50%, #e8f1ff 50%);
+  border-radius: 1px;
+}
+
+/* ─── Meta / scale ─── */
+
+.earth-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 90px;
+}
+
+.earth-meta--inline {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.35rem;
+  min-width: 0;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.earth-meta__label {
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--earth-muted);
+}
+
+.earth-meta--inline .earth-meta__label {
+  font-size: 0.52rem;
+  letter-spacing: 0.1em;
+}
+
+.earth-meta__value {
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--earth-text);
+}
+
+.earth-meta--inline .earth-meta__value {
+  font-size: 0.72rem;
+}
+
+.earth-scale-bar {
+  display: block;
+  width: 72px;
+  height: 2px;
+  margin-top: 0.25rem;
+  background: linear-gradient(90deg, transparent, var(--earth-accent), transparent);
+}
+
+.earth-meta--fps .earth-meta__value {
+  color: var(--earth-accent-2);
+}
+
+/* ─── Marker chips ─── */
+
+.earth-marker-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.earth-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--earth-glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--earth-text);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.earth-chip:hover {
+  border-color: rgba(110, 182, 255, 0.4);
+}
+
+.earth-chip--active {
+  border-color: rgba(126, 240, 208, 0.55);
+  background: rgba(126, 240, 208, 0.08);
+}
+
+.earth-chip__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.earth-selection {
+  margin-top: 0.5rem;
+  font-size: 0.68rem;
+  color: var(--earth-muted);
+}
+
+/* ─── Marker tooltip (Html overlay) ─── */
+
+.earth-marker-tooltip {
+  min-width: 160px;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  background: rgba(8, 14, 28, 0.88);
+  border: 1px solid rgba(180, 210, 255, 0.18);
+  backdrop-filter: blur(12px);
+  color: #e8f1ff;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  font-family: var(--font-body);
+  transform: translateY(-6px);
+}
+
+.earth-marker-tooltip__row {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.earth-marker-tooltip__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.earth-marker-tooltip__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.earth-marker-tooltip__name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.earth-marker-tooltip__desc {
+  font-size: 0.68rem;
+  color: rgba(200, 220, 255, 0.6);
+  margin-top: 0.1rem;
+}
+
+.earth-marker-tooltip__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.45rem;
+  font-size: 0.62rem;
+  color: rgba(200, 220, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.earth-marker-tooltip__status {
+  font-weight: 600;
+}
+
+/* ─── Fallback ─── */
+
+.earth-fallback {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: 2rem;
+  text-align: center;
+  background: #02040a;
+}
+
+.earth-fallback__content h2 {
+  font-family: var(--font-display);
+  margin-bottom: 0.5rem;
+}
+
+.earth-fallback__content p {
+  color: var(--earth-muted);
+  max-width: 360px;
+}
+
+/* ─── Responsive ─── */
+
+@media (max-width: 768px) {
+  .earth-sidebar-fab {
+    top: auto;
+    bottom: 7.5rem;
+    left: 0.75rem;
+  }
+
+  .earth-sidebar {
+    top: auto;
+    bottom: calc(7.5rem + 3.1rem);
+    left: 0.75rem;
+    width: min(300px, calc(100vw - 1.5rem));
+    max-height: min(50vh, calc(100dvh - 12rem));
+  }
+
+  .earth-hud--markers {
+    left: 0.75rem;
+    right: 0.75rem;
+    width: auto;
+    bottom: 0.75rem;
+  }
+
+  .earth-hud--footer {
+    bottom: 0.25rem;
+    max-width: calc(100vw - 1.5rem);
+  }
+
+  .earth-footer-bar {
+    gap: 0.55rem;
+    padding: 0.4rem 0.65rem;
+  }
+
+  .earth-hud--zoom {
+    right: 0.75rem;
+  }
+
+  .earth-brand {
+    letter-spacing: 0.14em;
+  }
+}
+
+@media (max-width: 480px) {
+  .earth-sidebar {
+    width: calc(100vw - 1.5rem);
+  }
+}
+
+/* ─── Dry Earth ─── */
+.dry-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.dry-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.dry-panel__title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(220, 235, 255, 0.95);
+}
+
+.dry-panel__sub {
+  font-size: 0.7rem;
+  color: rgba(180, 200, 230, 0.55);
+  margin-top: 0.1rem;
+}
+
+.dry-panel__level {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.05rem;
+  color: rgba(140, 210, 255, 0.95);
+}
+
+.dry-panel__level-target {
+  font-size: 0.72rem;
+  color: rgba(180, 200, 230, 0.45);
+}
+
+.dry-slider {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dry-slider__cap {
+  font-size: 0.6rem;
+  color: rgba(180, 200, 230, 0.45);
+  white-space: nowrap;
+}
+
+.dry-slider input[type="range"] {
+  width: 100%;
+  accent-color: #5eb8ff;
+}
+
+.dry-presets,
+.dry-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.dry-toggles,
+.dry-geo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dry-legend {
+  position: absolute;
+  right: 4.5rem;
+  bottom: 5.5rem;
+  z-index: 30;
+  width: 11rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: var(--earth-glass);
+  border: 1px solid var(--earth-glass-border);
+  backdrop-filter: blur(16px);
+  pointer-events: none;
+}
+
+.dry-legend__title {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(200, 220, 255, 0.7);
+  margin-bottom: 0.45rem;
+}
+
+.dry-legend__ramp {
+  height: 7rem;
+  width: 0.55rem;
+  border-radius: 4px;
+  float: left;
+  margin-right: 0.55rem;
+}
+
+.dry-legend__ticks {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 7rem;
+  font-size: 0.6rem;
+  color: rgba(180, 200, 230, 0.65);
+  font-variant-numeric: tabular-nums;
+}
+
+.dry-legend__stats {
+  clear: both;
+  margin-top: 0.65rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.dry-legend__stats > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.65rem;
+}
+
+.dry-legend__k {
+  color: rgba(180, 200, 230, 0.5);
+}
+
+.dry-legend__v {
+  color: rgba(220, 235, 255, 0.9);
+  font-variant-numeric: tabular-nums;
+}
+
+.dry-info {
+  position: absolute;
+  left: 1rem;
+  bottom: 5.5rem;
+  z-index: 30;
+  max-width: 16rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.dry-info__hint {
+  font-size: 0.7rem;
+  color: rgba(180, 210, 255, 0.7);
+  padding: 0.4rem 0.65rem;
+  border-radius: 8px;
+  background: var(--earth-glass);
+  border: 1px solid var(--earth-glass-border);
+}
+
+.dry-info__card {
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: var(--earth-glass);
+  border: 1px solid var(--earth-glass-border);
+  backdrop-filter: blur(16px);
+}
+
+.dry-info__title {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(200, 220, 255, 0.75);
+  margin-bottom: 0.45rem;
+}
+
+.dry-info__grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.2rem 0.65rem;
+  font-size: 0.7rem;
+  margin: 0;
+}
+
+.dry-info__grid dt {
+  color: rgba(180, 200, 230, 0.5);
+}
+
+.dry-info__grid dd {
+  margin: 0;
+  color: rgba(230, 240, 255, 0.92);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.dry-profile-svg {
+  margin-top: 0.5rem;
+  width: 100%;
+  height: auto;
+  opacity: 0.9;
+}
+
+.dry-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  background: rgba(8, 14, 28, 0.72);
+  border: 1px solid rgba(160, 200, 255, 0.22);
+  white-space: nowrap;
+  transform: translateY(-50%);
+}
+
+.dry-label__name {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(235, 245, 255, 0.95);
+  letter-spacing: 0.02em;
+}
+
+.dry-label__meta {
+  font-size: 0.55rem;
+  color: rgba(160, 200, 230, 0.7);
+  font-variant-numeric: tabular-nums;
+}
+
+.dry-label--deep .dry-label__name {
+  color: #7dd3fc;
+}
+
+.dry-label--ridge .dry-label__name {
+  color: #fcd34d;
+}
+
+.dry-label--peak .dry-label__name {
+  color: #f8fafc;
+}
+
+.dry-label--land .dry-label__name {
+  color: #fbbf24;
+}
+
+.dry-label--water .dry-label__name {
+  color: #67e8f9;
+}
+
+@media (max-width: 900px) {
+  .dry-legend {
+    right: 0.75rem;
+    bottom: 7.5rem;
+    width: 9.5rem;
+  }
+
+  .dry-info {
+    left: 0.75rem;
+    bottom: 7.5rem;
+    max-width: 13rem;
+  }
 }

@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ORBIT — Professional 3D Earth
 
-## Getting Started
+Cinematic interactive Earth for Next.js (App Router) + React Three Fiber.
 
-First, run the development server:
+## Run
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## GIS layers
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Toggleable modular layers under `src/components/earth/gis/`:
 
-## Learn More
+| Layer | Data source |
+|-------|-------------|
+| Satellite | ESRI World Imagery + Carto streets |
+| Terrain / Elevation | AWS Mapzen Terrarium DEM |
+| Water | Natural Earth lakes/rivers + OSM Overpass |
+| Land cover / Forest | OSM landuse / natural polygons |
+| Roads | OSM highways, rail, runways |
+| Buildings | OSM building footprints + heights |
+| Borders | Natural Earth countries + admin-1 |
+| Labels / POIs / Natural | Curated + OSM + Natural Earth points |
 
-To learn more about Next.js, take a look at the following resources:
+Use the **GIS Layers** panel in the left HUD. Zoom in (L4+) for vector detail; Overpass loads lazily around the camera focus.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Scroll or pinch from **Deep Space (L0)** down to **Street (L7)**.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Level | Name | What loads |
+|------:|------|------------|
+| 0 | Deep Space | Globe · stars · atmosphere |
+| 1 | Planet | Borders · continent labels |
+| 2 | Continent | Satellite tiles · country labels |
+| 3–4 | Country / Province | Higher tile Z · terrain · cities |
+| 5–7 | City → Street | Street tiles · OSM buildings · street labels |
 
-## Deploy on Vercel
+HUD shows **zoom level**, **altitude**, **lat/lng**, **heading**, **pitch**, and tile streaming status.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Double-click flies in. Use **Street** chip for a NYC street-level demo.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Upgrade to 8K textures
+
+Place maps in `public/textures/earth/`:
+
+- `earth_day.jpg` (8K day / albedo)
+- `earth_night.jpg` (city lights)
+- `earth_normal.jpg` (normal)
+- `earth_specular.jpg` (ocean specular)
+- `earth_roughness.jpg` (roughness)
+- `earth_clouds.jpg` (clouds alpha)
+
+Recommended sources: [NASA Blue Marble](https://visibleearth.nasa.gov/), [Solar System Scope](https://www.solarsystemscope.com/textures/).
+
+The loader prefers local files and falls back to CDN 2K maps.
+
+## Architecture
+
+```
+src/components/earth/
+  EarthCanvas.tsx      # Canvas + a11y + HUD shell
+  EarthScene.tsx       # Scene graph composition
+  Earth.tsx            # PBR/custom shader globe
+  Atmosphere.tsx       # Fresnel atmosphere + halo
+  Clouds.tsx           # Independent cloud shell
+  Stars.tsx            # Starfield + nebula + milky way
+  Lighting.tsx         # Sun + hemisphere
+  CameraController.tsx # Damped orbit + fly-to
+  CountryBorders.tsx   # GeoJSON line borders
+  Markers.tsx          # Pulsing interactive markers
+  shaders/             # GLSL
+  hooks/ store/ utils/ types/ ui/
+```
