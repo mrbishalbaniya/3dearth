@@ -57,10 +57,8 @@ export default function GamePage() {
         </Link>
         <div className="game-page__title-wrapper">
           <h1 className="game-page__title">
-            <span className="game-page__title-flag">🇳🇵</span>
             Explore Nepal
           </h1>
-          <p className="game-page__title-ne">नेपाल अन्वेषण गर्नुहोस्</p>
         </div>
       </nav>
 
@@ -120,29 +118,11 @@ export default function GamePage() {
         }
 
         .game-page__title {
-          display: flex;
-          align-items: center;
-          gap: 12px;
           font-size: 28px;
           font-weight: 800;
           color: white;
           text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
           margin: 0;
-        }
-
-        .game-page__title-flag {
-          font-size: 32px;
-          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-        }
-
-        .game-page__title-ne {
-          font-family: "Noto Sans Devanagari", sans-serif;
-          font-size: 14px;
-          font-weight: 500;
-          color: rgba(255, 255, 255, 0.85);
-          text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-          margin: 0;
-          letter-spacing: 0.5px;
         }
 
         @media (max-width: 768px) {
@@ -160,14 +140,6 @@ export default function GamePage() {
 
           .game-page__title {
             font-size: 22px;
-          }
-
-          .game-page__title-flag {
-            font-size: 26px;
-          }
-
-          .game-page__title-ne {
-            font-size: 12px;
           }
         }
       `}</style>

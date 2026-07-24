@@ -69,14 +69,12 @@ export function NepalGameHUD() {
       {/* Progress Stats */}
       <div className="nepal-hud__stats">
         <div className="nepal-hud__stat">
-          <span className="nepal-hud__stat-icon">🏙️</span>
           <span className="nepal-hud__stat-value">
             {citiesFound.length}/{NEPAL_CITIES.length}
           </span>
           <span className="nepal-hud__stat-label">Cities</span>
         </div>
         <div className="nepal-hud__stat">
-          <span className="nepal-hud__stat-icon">🏔️</span>
           <span className="nepal-hud__stat-value">
             {mountainsFound.length}/{NEPAL_MOUNTAINS.length}
           </span>
@@ -84,7 +82,6 @@ export function NepalGameHUD() {
         </div>
         {totalDistance > 0 && (
           <div className="nepal-hud__stat">
-            <span className="nepal-hud__stat-icon">✈️</span>
             <span className="nepal-hud__stat-value">
               {formatDistance(totalDistance)}
             </span>
@@ -100,9 +97,6 @@ export function NepalGameHUD() {
             <h3 className="nepal-hud__challenge-title">
               {currentChallenge.title}
             </h3>
-            <div className="nepal-hud__challenge-subtitle">
-              {currentChallenge.titleNe}
-            </div>
           </div>
           <div className="nepal-hud__challenge-description">
             {currentChallenge.description}
@@ -117,7 +111,7 @@ export function NepalGameHUD() {
                   timeRemaining < 20 ? "nepal-hud__challenge-timer--warning" : ""
                 }`}
               >
-                ⏱️ {formatTime(timeRemaining)}
+                {formatTime(timeRemaining)}
               </div>
             )}
           </div>
@@ -225,7 +219,7 @@ export function NepalGameHUD() {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 6px;
+          gap: 8px;
           padding: 8px 4px;
           border-radius: 10px;
           transition: all 0.2s;
@@ -233,11 +227,6 @@ export function NepalGameHUD() {
 
         .nepal-hud__stat:hover {
           background: rgba(255, 255, 255, 0.05);
-        }
-
-        .nepal-hud__stat-icon {
-          font-size: 26px;
-          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
 
         .nepal-hud__stat-value {
@@ -302,15 +291,8 @@ export function NepalGameHUD() {
           font-size: 19px;
           font-weight: 800;
           color: white;
-          margin: 0 0 6px 0;
+          margin: 0;
           text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-        }
-
-        .nepal-hud__challenge-subtitle {
-          font-size: 14px;
-          color: rgba(255, 255, 255, 0.85);
-          font-family: "Noto Sans Devanagari", sans-serif;
-          letter-spacing: 0.3px;
         }
 
         .nepal-hud__challenge-description {
@@ -418,10 +400,6 @@ export function NepalGameHUD() {
           .nepal-hud__stats {
             gap: 8px;
             padding: 12px 10px;
-          }
-
-          .nepal-hud__stat-icon {
-            font-size: 22px;
           }
 
           .nepal-hud__stat-value {

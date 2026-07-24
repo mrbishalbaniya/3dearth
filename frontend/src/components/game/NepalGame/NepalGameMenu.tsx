@@ -62,7 +62,6 @@ export function NepalGameMenu() {
     <div className="nepal-menu">
       <div className="nepal-menu__header">
         <h1 className="nepal-menu__title">Explore Nepal</h1>
-        <div className="nepal-menu__subtitle">नेपाल अन्वेषण गर्नुहोस्</div>
         <div className="nepal-menu__score">Score: {score}</div>
       </div>
 
@@ -71,25 +70,25 @@ export function NepalGameMenu() {
           className={`nepal-menu__tab ${mode === "explore" ? "nepal-menu__tab--active" : ""}`}
           onClick={() => setMode("explore")}
         >
-          🗺️ Explore
+          Explore
         </button>
         <button
           className={`nepal-menu__tab ${mode === "flight" ? "nepal-menu__tab--active" : ""}`}
           onClick={() => setMode("flight")}
         >
-          ✈️ Flight
+          Flight
         </button>
         <button
           className={`nepal-menu__tab ${mode === "city_finder" ? "nepal-menu__tab--active" : ""}`}
           onClick={() => setMode("city_finder")}
         >
-          🏙️ Cities
+          Cities
         </button>
         <button
           className={`nepal-menu__tab ${mode === "mountain_challenge" ? "nepal-menu__tab--active" : ""}`}
           onClick={() => setMode("mountain_challenge")}
         >
-          🏔️ Mountains
+          Mountains
         </button>
       </div>
 
@@ -145,12 +144,12 @@ export function NepalGameMenu() {
         {mode === "flight" && (
           <div className="nepal-menu__section">
             <h3 className="nepal-menu__section-title">
-              {gameMode === "flight" ? "✈️ In Flight" : "Select Departure City"}
+              {gameMode === "flight" ? "In Flight" : "Select Departure City"}
             </h3>
             {gameMode === "flight" ? (
               <div className="nepal-menu__flight-active">
                 <div className="nepal-menu__flight-status">
-                  🛩️ Flight in Progress
+                  Flight in Progress
                 </div>
                 <p className="nepal-menu__flight-info">
                   Use WASD to control the aircraft. Press ESC to end flight.
@@ -164,15 +163,9 @@ export function NepalGameMenu() {
                     className="nepal-menu__list-item nepal-menu__flight-city"
                     onClick={() => handleStartFlight(city.id)}
                   >
-                    <div className="nepal-menu__list-icon">
-                      {city.type === "capital" ? "⭐" : "🛫"}
-                    </div>
                     <div className="nepal-menu__list-content">
                       <div className="nepal-menu__list-name">
                         {city.name}
-                      </div>
-                      <div className="nepal-menu__list-subtitle">
-                        {city.nameNe}
                       </div>
                       <div className="nepal-menu__list-detail">
                         {city.description} • Elevation: {city.elevationM}m
@@ -199,16 +192,10 @@ export function NepalGameMenu() {
                     className={`nepal-menu__list-item ${found ? "nepal-menu__list-item--found" : ""}`}
                     onClick={() => handleCityClick(city.id)}
                   >
-                    <div className="nepal-menu__list-icon">
-                      {city.type === "capital" ? "⭐" : "🏙️"}
-                    </div>
                     <div className="nepal-menu__list-content">
                       <div className="nepal-menu__list-name">
                         {city.name}
                         {found && <span className="nepal-menu__found-badge">✓</span>}
-                      </div>
-                      <div className="nepal-menu__list-subtitle">
-                        {city.nameNe}
                       </div>
                       <div className="nepal-menu__list-detail">
                         {city.description} • {city.elevationM}m
@@ -235,16 +222,10 @@ export function NepalGameMenu() {
                     className={`nepal-menu__list-item ${found ? "nepal-menu__list-item--found" : ""}`}
                     onClick={() => handleMountainClick(mountain.id)}
                   >
-                    <div className="nepal-menu__list-icon">
-                      {mountain.rank === 1 ? "👑" : "🏔️"}
-                    </div>
                     <div className="nepal-menu__list-content">
                       <div className="nepal-menu__list-name">
                         {mountain.name}
                         {found && <span className="nepal-menu__found-badge">✓</span>}
-                      </div>
-                      <div className="nepal-menu__list-subtitle">
-                        {mountain.nameNe}
                       </div>
                       <div className="nepal-menu__list-detail">
                         Rank #{mountain.rank} • {mountain.elevationM}m • {mountain.range}
@@ -323,16 +304,8 @@ export function NepalGameMenu() {
           font-size: 30px;
           font-weight: 800;
           color: white;
-          margin: 0 0 6px 0;
+          margin: 0 0 14px 0;
           text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-        }
-
-        .nepal-menu__subtitle {
-          font-size: 17px;
-          color: rgba(255, 255, 255, 0.75);
-          font-family: "Noto Sans Devanagari", sans-serif;
-          margin-bottom: 14px;
-          letter-spacing: 0.3px;
         }
 
         .nepal-menu__score {
@@ -340,14 +313,6 @@ export function NepalGameMenu() {
           font-weight: 700;
           color: #fbbf24;
           text-shadow: 0 0 16px rgba(251, 191, 36, 0.5);
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .nepal-menu__score::before {
-          content: "⭐";
-          font-size: 20px;
         }
 
         .nepal-menu__tabs {
@@ -604,12 +569,6 @@ export function NepalGameMenu() {
           );
         }
 
-        .nepal-menu__list-icon {
-          font-size: 28px;
-          flex-shrink: 0;
-          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-        }
-
         .nepal-menu__list-content {
           flex: 1;
           min-width: 0;
@@ -619,7 +578,6 @@ export function NepalGameMenu() {
           font-size: 15px;
           font-weight: 700;
           color: white;
-          margin-bottom: 5px;
           display: flex;
           align-items: center;
           gap: 10px;
@@ -629,13 +587,6 @@ export function NepalGameMenu() {
           color: #10b981;
           font-size: 16px;
           animation: checkPop 0.4s ease-out;
-        }
-
-        .nepal-menu__list-subtitle {
-          font-size: 13px;
-          color: rgba(255, 255, 255, 0.6);
-          font-family: "Noto Sans Devanagari", sans-serif;
-          margin-bottom: 6px;
         }
 
         .nepal-menu__list-detail {
@@ -706,26 +657,6 @@ export function NepalGameMenu() {
           color: rgba(255, 255, 255, 0.7);
           line-height: 1.6;
           margin: 0;
-        }
-
-        .nepal-menu__flight-city {
-          position: relative;
-        }
-
-        .nepal-menu__flight-city::after {
-          content: "✈️";
-          position: absolute;
-          right: 18px;
-          top: 50%;
-          transform: translateY(-50%);
-          font-size: 24px;
-          opacity: 0;
-          transition: opacity 0.3s, transform 0.3s;
-        }
-
-        .nepal-menu__flight-city:hover::after {
-          opacity: 1;
-          transform: translateY(-50%) translateX(0);
         }
 
         @media (max-width: 768px) {
