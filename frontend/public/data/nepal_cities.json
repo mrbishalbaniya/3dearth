@@ -1,0 +1,185 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kathmandu",
+        "name_ne": "काठमाडौं",
+        "type": "capital",
+        "population": 1442271,
+        "elevation_m": 1400,
+        "description": "Capital and largest city"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [85.3240, 27.7172]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pokhara",
+        "name_ne": "पोखरा",
+        "type": "city",
+        "population": 518452,
+        "elevation_m": 827,
+        "description": "Gateway to Annapurna"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [83.9856, 28.2096]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lalitpur",
+        "name_ne": "ललितपुर",
+        "type": "city",
+        "population": 284922,
+        "elevation_m": 1400,
+        "description": "City of Fine Arts"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [85.3206, 27.6588]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bharatpur",
+        "name_ne": "भरतपुर",
+        "type": "city",
+        "population": 280502,
+        "elevation_m": 208,
+        "description": "Metropolitan city in Chitwan"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [84.4377, 27.6768]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Biratnagar",
+        "name_ne": "विराटनगर",
+        "type": "city",
+        "population": 242192,
+        "elevation_m": 72,
+        "description": "Industrial hub of eastern Nepal"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [87.2718, 26.4525]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bhaktapur",
+        "name_ne": "भक्तपुर",
+        "type": "city",
+        "population": 104952,
+        "elevation_m": 1401,
+        "description": "Ancient city of culture"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [85.4298, 27.6710]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Birgunj",
+        "name_ne": "वीरगञ्ज",
+        "type": "city",
+        "population": 204949,
+        "elevation_m": 95,
+        "description": "Border trade city"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [84.8763, 27.0104]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Dharan",
+        "name_ne": "धरान",
+        "type": "city",
+        "population": 173096,
+        "elevation_m": 349,
+        "description": "Educational hub"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [87.2803, 26.8144]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Butwal",
+        "name_ne": "बुटवल",
+        "type": "city",
+        "population": 195054,
+        "elevation_m": 205,
+        "description": "Commercial center"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [83.4486, 27.7000]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hetauda",
+        "name_ne": "हेटौडा",
+        "type": "city",
+        "population": 152875,
+        "elevation_m": 474,
+        "description": "Industrial city"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [85.0326, 27.4287]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Dhangadhi",
+        "name_ne": "धनगढी",
+        "type": "city",
+        "population": 147742,
+        "elevation_m": 180,
+        "description": "Far-western city"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [80.5842, 28.6956]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Itahari",
+        "name_ne": "इटहरी",
+        "type": "city",
+        "population": 143086,
+        "elevation_m": 130,
+        "description": "Trade junction"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [87.2807, 26.6667]
+      }
+    }
+  ]
+}

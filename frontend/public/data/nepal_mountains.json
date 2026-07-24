@@ -1,0 +1,134 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Mount Everest",
+        "name_ne": "सगरमाथा",
+        "name_tibetan": "Chomolungma",
+        "elevation_m": 8848.86,
+        "rank": 1,
+        "range": "Mahalangur Himal",
+        "first_ascent": "1953",
+        "difficulty": "extreme"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [86.9250, 27.9881]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kanchenjunga",
+        "name_ne": "कञ्चनजङ्घा",
+        "elevation_m": 8586,
+        "rank": 3,
+        "range": "Kanchenjunga Himal",
+        "first_ascent": "1955",
+        "difficulty": "extreme"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [88.1475, 27.7025]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lhotse",
+        "name_ne": "ल्होत्से",
+        "elevation_m": 8516,
+        "rank": 4,
+        "range": "Mahalangur Himal",
+        "first_ascent": "1956",
+        "difficulty": "extreme"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [86.9333, 27.9617]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Makalu",
+        "name_ne": "मकालु",
+        "elevation_m": 8485,
+        "rank": 5,
+        "range": "Mahalangur Himal",
+        "first_ascent": "1955",
+        "difficulty": "extreme"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [87.0886, 27.8892]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cho Oyu",
+        "name_ne": "चोयु",
+        "elevation_m": 8188,
+        "rank": 6,
+        "range": "Mahalangur Himal",
+        "first_ascent": "1954",
+        "difficulty": "very_high"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [86.6608, 28.0942]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Dhaulagiri",
+        "name_ne": "धौलागिरी",
+        "elevation_m": 8167,
+        "rank": 7,
+        "range": "Dhaulagiri Himal",
+        "first_ascent": "1960",
+        "difficulty": "extreme"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [83.4930, 28.6974]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Manaslu",
+        "name_ne": "मनास्लु",
+        "elevation_m": 8163,
+        "rank": 8,
+        "range": "Mansiri Himal",
+        "first_ascent": "1956",
+        "difficulty": "very_high"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [84.5597, 28.5497]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Annapurna I",
+        "name_ne": "अन्नपूर्णा",
+        "elevation_m": 8091,
+        "rank": 10,
+        "range": "Annapurna Himal",
+        "first_ascent": "1950",
+        "difficulty": "extreme"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [83.8203, 28.5956]
+      }
+    }
+  ]
+}
