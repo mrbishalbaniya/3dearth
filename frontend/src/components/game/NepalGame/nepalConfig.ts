@@ -195,7 +195,7 @@ export const NEPAL_MOUNTAINS: NepalMountain[] = [
   },
 ];
 
-export type NepalGameMode = "explore" | "city_finder" | "mountain_challenge" | "flight_tour";
+export type NepalGameMode = "explore" | "city_finder" | "mountain_challenge" | "flight" | "flight_tour";
 
 export interface NepalGameChallenge {
   id: string;

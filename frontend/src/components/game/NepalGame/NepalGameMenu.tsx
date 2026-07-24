@@ -3,6 +3,7 @@
 import { useNepalGameStore } from "./nepalGameStore";
 import { NEPAL_CHALLENGES, NEPAL_CITIES, NEPAL_MOUNTAINS } from "./nepalConfig";
 import { useEarthStore } from "@/components/earth/store/earthStore";
+import { useGameStore } from "../store/gameStore";
 
 export function NepalGameMenu() {
   const mode = useNepalGameStore((s) => s.mode);
@@ -15,6 +16,8 @@ export function NepalGameMenu() {
   const mountainsFound = useNepalGameStore((s) => s.mountainsFound);
 
   const requestFlyTo = useEarthStore((s) => s.requestFlyTo);
+  const beginFlight = useGameStore((s) => s.beginFlight);
+  const gameMode = useGameStore((s) => s.mode);
 
   const handleCityClick = (cityId: string) => {
     const city = NEPAL_CITIES.find((c) => c.id === cityId);
@@ -44,6 +47,17 @@ export function NepalGameMenu() {
     startChallenge(challenge);
   };
 
+  const handleStartFlight = (cityId: string) => {
+    const city = NEPAL_CITIES.find((c) => c.id === cityId);
+    if (!city) return;
+    beginFlight({
+      lat: city.lat,
+      lng: city.lng,
+      elevM: city.elevationM + 500, // Start 500m above city
+      headingDeg: 0,
+    });
+  };
+
   return (
     <div className="nepal-menu">
       <div className="nepal-menu__header">
@@ -58,6 +72,12 @@ export function NepalGameMenu() {
           onClick={() => setMode("explore")}
         >
           🗺️ Explore
+        </button>
+        <button
+          className={`nepal-menu__tab ${mode === "flight" ? "nepal-menu__tab--active" : ""}`}
+          onClick={() => setMode("flight")}
+        >
+          ✈️ Flight
         </button>
         <button
           className={`nepal-menu__tab ${mode === "city_finder" ? "nepal-menu__tab--active" : ""}`}
@@ -119,6 +139,49 @@ export function NepalGameMenu() {
                 Reset Game
               </button>
             </div>
+          </div>
+        )}
+
+        {mode === "flight" && (
+          <div className="nepal-menu__section">
+            <h3 className="nepal-menu__section-title">
+              {gameMode === "flight" ? "✈️ In Flight" : "Select Departure City"}
+            </h3>
+            {gameMode === "flight" ? (
+              <div className="nepal-menu__flight-active">
+                <div className="nepal-menu__flight-status">
+                  🛩️ Flight in Progress
+                </div>
+                <p className="nepal-menu__flight-info">
+                  Use WASD to control the aircraft. Press ESC to end flight.
+                </p>
+              </div>
+            ) : (
+              <div className="nepal-menu__list">
+                {NEPAL_CITIES.map((city) => (
+                  <button
+                    key={city.id}
+                    className="nepal-menu__list-item nepal-menu__flight-city"
+                    onClick={() => handleStartFlight(city.id)}
+                  >
+                    <div className="nepal-menu__list-icon">
+                      {city.type === "capital" ? "⭐" : "🛫"}
+                    </div>
+                    <div className="nepal-menu__list-content">
+                      <div className="nepal-menu__list-name">
+                        {city.name}
+                      </div>
+                      <div className="nepal-menu__list-subtitle">
+                        {city.nameNe}
+                      </div>
+                      <div className="nepal-menu__list-detail">
+                        {city.description} • Elevation: {city.elevationM}m
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -607,6 +670,62 @@ export function NepalGameMenu() {
           background: rgba(255, 255, 255, 0.12);
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .nepal-menu__flight-active {
+          padding: 24px;
+          background: linear-gradient(
+            135deg,
+            rgba(34, 197, 94, 0.15),
+            rgba(16, 185, 129, 0.1)
+          );
+          border: 2px solid rgba(34, 197, 94, 0.3);
+          border-radius: 16px;
+          text-align: center;
+        }
+
+        .nepal-menu__flight-status {
+          font-size: 20px;
+          font-weight: 700;
+          color: #22c55e;
+          margin-bottom: 12px;
+          animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.7;
+          }
+        }
+
+        .nepal-menu__flight-info {
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.7);
+          line-height: 1.6;
+          margin: 0;
+        }
+
+        .nepal-menu__flight-city {
+          position: relative;
+        }
+
+        .nepal-menu__flight-city::after {
+          content: "✈️";
+          position: absolute;
+          right: 18px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 24px;
+          opacity: 0;
+          transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .nepal-menu__flight-city:hover::after {
+          opacity: 1;
+          transform: translateY(-50%) translateX(0);
         }
 
         @media (max-width: 768px) {

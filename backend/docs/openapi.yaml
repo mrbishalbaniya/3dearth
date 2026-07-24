@@ -1,0 +1,465 @@
+openapi: 3.0.3
+info:
+  title: Orbit Earth Backend API
+  version: 1.0.0
+  description: |
+    Production-oriented Go API for the global 3D Earth flight simulator.
+    Use **Authorize** with a JWT access token from `/api/v1/auth/login` for protected routes.
+servers:
+  - url: http://localhost:8080
+    description: Local development
+tags:
+  - name: Health
+  - name: Auth
+  - name: Airports
+  - name: Navigation
+  - name: Weather
+  - name: Flights
+  - name: Multiplayer
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+    Airport:
+      type: object
+      properties:
+        icao: { type: string, example: VNKT }
+        iata: { type: string, example: KTM }
+        name: { type: string }
+        city: { type: string }
+        country: { type: string }
+        elevM: { type: number }
+        lat: { type: number }
+        lng: { type: number }
+    Runway:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        airportIcao: { type: string }
+        ident: { type: string }
+        headingDeg: { type: number }
+        lengthM: { type: number }
+        widthM: { type: number }
+    WeatherSample:
+      type: object
+      properties:
+        lat: { type: number }
+        lng: { type: number }
+        windFromDeg: { type: number }
+        windSpeedMs: { type: number }
+        tempC: { type: number }
+        pressureHpa: { type: number }
+        visibilityM: { type: number }
+        cloudsOctas: { type: integer }
+        provider: { type: string }
+        observedAt: { type: string, format: date-time }
+    GreatCircle:
+      type: object
+      properties:
+        distanceNm: { type: number }
+        bearingDeg: { type: number }
+        eteSec: { type: integer }
+        waypoints:
+          type: array
+          items:
+            type: object
+            properties:
+              lat: { type: number }
+              lng: { type: number }
+    AuthTokens:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiresIn: { type: integer, description: Seconds until access token expiry }
+    Flight:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        aircraftId: { type: string }
+        depIcao: { type: string }
+        destIcao: { type: string }
+        altnIcao: { type: string }
+        status: { type: string, enum: [planned, active, completed, crashed, aborted] }
+paths:
+  /healthz:
+    get:
+      tags: [Health]
+      summary: Liveness probe
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                  service: { type: string }
+  /readyz:
+    get:
+      tags: [Health]
+      summary: Readiness (DB + Redis)
+      responses:
+        "200":
+          description: Ready
+        "503":
+          description: Dependency down
+  /api/v1/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, displayName]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                displayName: { type: string }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { type: object }
+                  tokens:
+                    $ref: "#/components/schemas/AuthTokens"
+        "409":
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { type: object }
+                  tokens:
+                    $ref: "#/components/schemas/AuthTokens"
+        "401":
+          description: Invalid credentials
+  /api/v1/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokens"
+        "401":
+          description: Invalid refresh token
+  /api/v1/me:
+    get:
+      tags: [Auth]
+      summary: Current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+  /api/v1/airports/search:
+    get:
+      tags: [Airports]
+      summary: Search airports
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+          description: ICAO / IATA / name / city prefix or substring
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  airports:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Airport"
+  /api/v1/airports/nearest:
+    get:
+      tags: [Airports]
+      summary: Nearest airports
+      parameters:
+        - in: query
+          name: lat
+          required: true
+          schema: { type: number }
+        - in: query
+          name: lng
+          required: true
+          schema: { type: number }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  airports:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Airport"
+  /api/v1/airports/{icao}:
+    get:
+      tags: [Airports]
+      summary: Get airport by ICAO
+      parameters:
+        - in: path
+          name: icao
+          required: true
+          schema: { type: string, minLength: 4, maxLength: 4 }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Airport"
+        "404":
+          description: Not found
+  /api/v1/airports/{icao}/runways:
+    get:
+      tags: [Airports]
+      summary: List runways for airport
+      parameters:
+        - in: path
+          name: icao
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  runways:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Runway"
+  /api/v1/navigation/great-circle:
+    get:
+      tags: [Navigation]
+      summary: Great-circle route + ETE
+      parameters:
+        - { in: query, name: fromLat, required: true, schema: { type: number } }
+        - { in: query, name: fromLng, required: true, schema: { type: number } }
+        - { in: query, name: toLat, required: true, schema: { type: number } }
+        - { in: query, name: toLng, required: true, schema: { type: number } }
+        - { in: query, name: cruiseMs, schema: { type: number, default: 120 } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GreatCircle"
+  /api/v1/weather:
+    get:
+      tags: [Weather]
+      summary: Weather sample at lat/lng
+      parameters:
+        - { in: query, name: lat, required: true, schema: { type: number } }
+        - { in: query, name: lng, required: true, schema: { type: number } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeatherSample"
+  /api/v1/flights:
+    post:
+      tags: [Flights]
+      summary: Start a flight session
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [aircraftId, depIcao]
+              properties:
+                aircraftId: { type: string, example: cirrus_sr22 }
+                depIcao: { type: string, example: VNKT }
+                destIcao: { type: string }
+                altnIcao: { type: string }
+      responses:
+        "201":
+          description: Created
+        "401":
+          description: Unauthorized
+  /api/v1/flights/{id}:
+    get:
+      tags: [Flights]
+      summary: Get flight
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not found
+  /api/v1/flights/{id}/positions:
+    post:
+      tags: [Flights]
+      summary: Record flight position
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lat, lng]
+              properties:
+                lat: { type: number }
+                lng: { type: number }
+                altM: { type: number }
+                hdgDeg: { type: number }
+                tasMs: { type: number }
+                vsMs: { type: number }
+      responses:
+        "204":
+          description: Recorded
+  /api/v1/flights/{id}/complete:
+    post:
+      tags: [Flights]
+      summary: Complete or crash flight
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fuelUsedKg: { type: number }
+                landingFpm: { type: number }
+                crashed: { type: boolean }
+      responses:
+        "204":
+          description: Completed
+  /api/v1/flight-plans:
+    post:
+      tags: [Flights]
+      summary: Create flight plan
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [depIcao, destIcao]
+              properties:
+                depIcao: { type: string }
+                destIcao: { type: string }
+                altnIcao: { type: string }
+                cruiseAltM: { type: number }
+                cruiseMs: { type: number }
+                burnKgPerHour: { type: number }
+      responses:
+        "201":
+          description: Created
+  /api/v1/multiplayer/stats:
+    get:
+      tags: [Multiplayer]
+      summary: Multiplayer hub stats
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+  /ws/v1/multiplayer:
+    get:
+      tags: [Multiplayer]
+      summary: WebSocket multiplayer hub
+      description: |
+        Connect with query params `token` (JWT access) and optional `callsign`.
+        Client sends `{"type":"pose","pose":{...}}`; server replies with `{"type":"nearby","players":[...]}`.
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema: { type: string }
+        - in: query
+          name: callsign
+          schema: { type: string, default: PILOT }
+      responses:
+        "101":
+          description: Switching Protocols
+        "401":
+          description: Missing or invalid token

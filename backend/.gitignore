@@ -1,0 +1,6 @@
+# Backend
+.env
+bin/
+dist/
+coverage.out
+*.exe
