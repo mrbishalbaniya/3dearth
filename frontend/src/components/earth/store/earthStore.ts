@@ -146,7 +146,7 @@ interface EarthStore {
     heading: number | null;
     updatedAt: number;
   } | null;
-  locationTracking: boolean;
+  terrainEnabled: boolean;
 
   /** Deep-space planet tour focus (`overview` = system view). */
   selectedSolarBody: SolarTourBodyId;
@@ -209,6 +209,7 @@ interface EarthStore {
   tourSolarBody: (id: SolarTourBodyId) => void;
   setSolarLayer: (key: keyof SolarLayerToggles, value: boolean) => void;
   toggleSolarLayer: (key: keyof SolarLayerToggles) => void;
+  setTerrainEnabled: (enabled: boolean) => void;
 }
 
 const defaultLayers: EarthLayerToggles = {
@@ -274,6 +275,7 @@ export const useEarthStore = create<EarthStore>((set) => ({
   gamepad: { moveX: 0, moveY: 0, lookX: 0, lookY: 0 },
   userLocation: null,
   locationTracking: false,
+  terrainEnabled: false,
   selectedSolarBody: "overview",
   solarFocusNonce: 0,
   solarLayers: { ...DEFAULT_SOLAR_LAYERS },
@@ -458,4 +460,5 @@ export const useEarthStore = create<EarthStore>((set) => ({
         [key]: !state.solarLayers[key],
       },
     })),
+  setTerrainEnabled: (enabled) => set({ terrainEnabled: enabled }),
 }));

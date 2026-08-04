@@ -150,17 +150,17 @@ export const QUALITY_PROFILES: Record<
   },
   low: {
     id: "low",
-    dpr: [1, 1],
-    earthSegments: 40,
-    cloudSegments: 24,
-    atmosphereSegments: 20,
-    starCount: 2_000,
+    dpr: [0.5, 0.5],  // Locked at 0.5 for game mode
+    earthSegments: 24,  // Reduced even further to prevent OOM
+    cloudSegments: 8,  // Minimal (disabled anyway)
+    atmosphereSegments: 8,  // Minimal (disabled anyway)
+    starCount: 100,  // Minimal (disabled anyway)
     enableBloom: false,
     enableShadows: false,
-    anisotropicFiltering: 1,
-    textureMaxSize: 1024,
-    maxTileRadius: 1,
-    maxBuildings: 50,
+    anisotropicFiltering: 1,  // Minimal filtering
+    textureMaxSize: 512,  // Extreme reduction to prevent OOM crashes
+    maxTileRadius: 0,
+    maxBuildings: 0,  // No buildings at all
   },
 };
 

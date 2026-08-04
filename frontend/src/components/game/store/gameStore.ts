@@ -110,7 +110,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   mode: "explore",
   hangarOpen: false,
   paused: false,
-  selectedAircraftId: "cirrus_sr22",
+  selectedAircraftId: "dhc6_twin_otter",
   spawnAirportIcao: "VNKT",
   flightState: null,
   systemsState: null,
@@ -119,7 +119,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   missionId: "free_flight",
   progress: {
     flightHours: 0,
-    unlocks: ["cirrus_sr22", "baron_b58", "citation_cj"],
+      unlocks: ["dhc6_twin_otter", "cirrus_sr22", "baron_b58", "citation_cj"],
     achievements: [],
     airportsVisited: [],
     bindings: {},

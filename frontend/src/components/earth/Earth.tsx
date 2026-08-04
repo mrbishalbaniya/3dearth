@@ -16,6 +16,7 @@ import {
   earthVertexShader,
 } from "./shaders/earthShaders";
 import { useEarthStore } from "./store/earthStore";
+import { useEarthAppMode } from "./appMode";
 import {
   ATMOSPHERE_COLOR,
   EARTH_RADIUS,
@@ -54,6 +55,7 @@ export function Earth({
   const dryEarthOn = useEarthStore((s) => s.dryEarth.enabled);
   const displaySea = useEarthStore((s) => s.dryEarth.displaySeaLevelM);
   const altitudeM = useEarthStore((s) => s.altitudeM);
+  const appMode = useEarthAppMode();
   const meshRef = useRef<Mesh>(null);
   const sunColorRef = useRef(sunColor ?? new Color("#fff5e6"));
 
@@ -68,8 +70,8 @@ export function Earth({
   );
 
   const material = useMemo(
-    () =>
-      new ShaderMaterial({
+    () => {
+      const mat = new ShaderMaterial({
         vertexShader: earthVertexShader,
         fragmentShader: earthFragmentShader,
         uniforms: {
@@ -95,7 +97,9 @@ export function Earth({
           uDryBlend: { value: 0 },
           uSeaLevelM: { value: 0 },
         },
-      }),
+      });
+      return mat;
+    },
     [textures, sunDirection, quality.id],
   );
 
@@ -143,8 +147,9 @@ export function Earth({
     // Never force globe to 0 while tiles are still streaming (black-gap fix).
     // Dry Earth: keep the base globe fully opaque so ocean discards are filled
     // by the dry shell without seeing stars / far-side continents through.
-    let globeOp = dryEarthOn ? 1 : altitudeToZoomLevel(altitudeM).globeOpacity;
-    if (satelliteOn && !dryEarthOn && altitudeM < 2_500_000) {
+    // Game mode: ALWAYS keep base globe fully opaque since no tiles load
+    let globeOp = dryEarthOn || appMode === "game" ? 1 : altitudeToZoomLevel(altitudeM).globeOpacity;
+    if (satelliteOn && !dryEarthOn && altitudeM < 2_500_000 && appMode !== "game") {
       const satFade =
         altitudeM <= 550_000
           ? 1
@@ -167,9 +172,9 @@ export function Earth({
         Math.min(globeOp, Math.max(minGlobe, 1 - hide)),
       );
     }
-    material.transparent = !dryEarthOn && globeOp < 0.98;
+    material.transparent = !dryEarthOn && appMode !== "game" && globeOp < 0.98;
     material.opacity = globeOp;
-    material.depthWrite = dryEarthOn || globeOp > 0.85;
+    material.depthWrite = dryEarthOn || appMode === "game" || globeOp > 0.85;
 
     if (meshRef.current) {
       meshRef.current.visible = globeOp > 0.02;
@@ -183,6 +188,18 @@ export function Earth({
       geometry={geometry}
       material={material}
       frustumCulled={false}
-    />
+    >
+      {/* Add a simple fallback mesh with basic material for debugging */}
+      {process.env.NODE_ENV === 'development' && (
+        <mesh position={[0, 0, 0]}>
+          <sphereGeometry args={[0.9, 32, 32]} />
+          <meshBasicMaterial 
+            map={textures.day} 
+            transparent={true} 
+            opacity={0.8}
+          />
+        </mesh>
+      )}
+    </mesh>
   );
 }

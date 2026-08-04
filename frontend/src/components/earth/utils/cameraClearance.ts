@@ -3,6 +3,9 @@ import { EARTH_RADIUS_M } from "./zoomLevels";
 /** Minimum eye height above local ground (meters AGL). */
 export const MIN_CAMERA_AGL_M = 10;
 
+/** Minimum altitude for game mode to prevent memory crashes (meters AGL). */
+export const MIN_GAME_MODE_ALTITUDE_M = 30_000;
+
 /** Extra pad near buildings — kept low so 10 m zoom stays reachable. */
 export const BUILDING_CLEARANCE_M = 0;
 

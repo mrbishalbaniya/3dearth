@@ -33,6 +33,12 @@ const REGISTRY: Record<string, CockpitModelDef> = {
     scale: 1,
     offsetY: 0,
   },
+  dhc6_twin_otter: {
+    aircraftId: "dhc6_twin_otter",
+    url: null,
+    scale: 1,
+    offsetY: 0,
+  },
   citation_cj: {
     aircraftId: "citation_cj",
     url: null,

@@ -60,6 +60,7 @@ export interface FuelSystemState {
 }
 
 export interface ElectricalState {
+  batteryOn: boolean;
   batteryV: number;
   batterySoc: number;
   alternatorOn: boolean;

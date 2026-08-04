@@ -30,6 +30,7 @@ export type CameraMode =
 export type AircraftClass =
   | "sep"
   | "tep"
+  | "turboprop_twin"
   | "business_jet"
   | "airliner"
   | "cargo"
@@ -116,6 +117,19 @@ export interface FlightControlsInput {
   toggleGear: boolean;
   toggleFlaps: boolean;
   brakes: boolean;
+  batteryOn?: boolean;
+  avionicsOn?: boolean;
+  starterLeft?: boolean;
+  starterRight?: boolean;
+  fuelPumpLeft?: boolean;
+  fuelPumpRight?: boolean;
+  fuelPumpCenter?: boolean;
+  landingLightOn?: boolean;
+  taxiLightOn?: boolean;
+  beaconOn?: boolean;
+  navLightsOn?: boolean;
+  strobeOn?: boolean;
+  pitotHeatOn?: boolean;
 }
 
 /**
@@ -189,7 +203,8 @@ export type MissionId =
   | "mountain"
   | "emergency"
   | "weather_challenge"
-  | "airport_challenge";
+  | "airport_challenge"
+  | "ktm_city_tour";
 
 export interface MissionDef {
   id: MissionId;

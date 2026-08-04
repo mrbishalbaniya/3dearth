@@ -22,6 +22,7 @@ import {
 } from "../Navigation/greatCircle";
 import { getAirport } from "../Services/AirportService";
 import { syncFlightToEarth } from "../World/FlightWorldBridge";
+import { useNavigationSystem } from "../Navigation/useNavigationSystem";
 import { saveProgress } from "../Save/SaveService";
 import { stepAircraftSystems } from "../Systems/AircraftSystemsBus";
 import {
@@ -50,6 +51,7 @@ export function AircraftEntity() {
   const syncAcc = useRef(0);
   const hoursAcc = useRef(0);
   const prevOnGround = useRef(true);
+  const navSystem = useNavigationSystem();
 
   useFrame((_, dt) => {
     const store = useGameStore.getState();
@@ -98,6 +100,21 @@ export function AircraftEntity() {
     if (useCockpitStore.getState().consumeGearToggle()) {
       ctrl.toggleGear = true;
     }
+
+    const overhead = useCockpitStore.getState().overhead;
+    ctrl.batteryOn = overhead.battery;
+    ctrl.avionicsOn = overhead.avionics;
+    ctrl.fuelPumpLeft = overhead.fuelPumpL;
+    ctrl.fuelPumpRight = overhead.fuelPumpR;
+    ctrl.fuelPumpCenter = false;
+    ctrl.landingLightOn = overhead.landingLight;
+    ctrl.taxiLightOn = overhead.taxiLight;
+    ctrl.beaconOn = overhead.beacon;
+    ctrl.navLightsOn = overhead.navLights;
+    ctrl.strobeOn = overhead.strobe;
+    ctrl.pitotHeatOn = overhead.pitotHeat;
+    ctrl.starterLeft = overhead.engStart1;
+    ctrl.starterRight = overhead.engStart2;
 
     const ctx = getSystemsContext();
     if (!ctx) return;
@@ -168,6 +185,12 @@ export function AircraftEntity() {
 
     worldTraffic.setFocus(next.lat, next.lng);
     worldTraffic.step(dt);
+
+    // ── Navigation system tick ──────────────────────────────────────────────
+    const navOutput = navSystem.tick(next, dt);
+    // navOutput.apCmd is already mirrored into autopilotStore by the hook.
+    // navOutput.navRoute is written to gameStore by the hook.
+    void navOutput;
 
     if (store.route.destIcao) {
       const dest = getAirport(store.route.destIcao);

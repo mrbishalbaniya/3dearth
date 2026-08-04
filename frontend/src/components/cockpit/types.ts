@@ -113,6 +113,7 @@ export const DEFAULT_OVERHEAD: OverheadState = {
 export const LAYOUT_BY_CLASS: Record<string, CockpitLayoutId> = {
   sep: { id: "g1000_sep", engineCount: 1, hasWeatherRadar: false, hasHud: false },
   tep: { id: "g1000_twin", engineCount: 2, hasWeatherRadar: false, hasHud: false },
+  turboprop_twin: { id: "g1000_twin", engineCount: 2, hasWeatherRadar: false, hasHud: false },
   business_jet: {
     id: "citation_glass",
     engineCount: 2,

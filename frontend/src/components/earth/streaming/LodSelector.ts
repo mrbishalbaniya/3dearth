@@ -70,14 +70,14 @@ function dedupePreferDetail(tiles: LodTile[]): LodTile[] {
 }
 
 /** Hard cap — prevents scheduler overflow / React mesh stampede / OOM. */
-const MAX_IMAGERY = 28;
+const MAX_IMAGERY = 3; // Extremely minimal for Nepal game mode - prevent OOM at all costs
 
 /** Z18 neighborhood tiles × dozens of meshes = Chrome GPU STATUS_BREAKPOINT. */
 function maxTileZ(qualityId: "ultra" | "high" | "medium" | "low"): number {
-  if (qualityId === "low") return 12;
-  if (qualityId === "medium") return 13;
-  if (qualityId === "high") return 14;
-  return 14;
+  if (qualityId === "low") return 10;  // Extremely reduced for game mode
+  if (qualityId === "medium") return 11;
+  if (qualityId === "high") return 12;
+  return 13;
 }
 
 /**
@@ -106,21 +106,21 @@ export function selectLodTiles(options: {
   let grandR: number;
 
   if (altitudeM >= 850_000) {
-    detailR = 1;
-    parentR = 2;
-    grandR = 1;
+    detailR = 0;
+    parentR = 0;
+    grandR = 0;
   } else if (altitudeM >= 80_000) {
-    detailR = 1;
-    parentR = 2;
-    grandR = 1;
+    detailR = 0;
+    parentR = 1;
+    grandR = 0;
   } else if (altitudeM >= 5_000) {
-    detailR = 1;
+    detailR = 0;
     parentR = 1;
-    grandR = 1;
+    grandR = 0;
   } else {
-    detailR = 1;
+    detailR = 0;
     parentR = 1;
-    grandR = 1;
+    grandR = 0;
   }
 
   const grandZ = Math.max(2, targetZ - 2);
@@ -140,7 +140,7 @@ export function selectLodTiles(options: {
   }
   const detail: LodTile[] = [
     ...collectRing(lat, lng, targetZ, detailR, "detail", 160, 1),
-    ...collectRing(lat, lng, targetZ, detailR + 1, "prefetch", 130, 0.85),
+    // Disable prefetch completely to save memory
   ];
 
   // Cap must NOT drop parents — otherwise zoom/pan shows black until detail arrives
@@ -188,7 +188,7 @@ export function selectLodTiles(options: {
  * Planet orbit (~5–12 Mm) still needs real SRTM or mountains read as flat tabletops.
  * Close zoom must stay tiny — z12×wide rings caused WebGL context loss (blank city view).
  */
-const MAX_DRY_DEM_TILES = 36;
+const MAX_DRY_DEM_TILES = 6; // Absolutely minimal for game mode - prevent OOM
 
 export function selectDryEarthDemTiles(options: {
   lat: number;

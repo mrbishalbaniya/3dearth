@@ -98,3 +98,35 @@ export function hasSeparationConflict(
   const dAlt = Math.abs(a.altM - b.altM);
   return dNm < sepNm && dAlt < 300;
 }
+
+export class RunwayManager {
+  createAirportOps(airport: Airport, windFromDeg: number): AirportOpsState {
+    return createAirportOps(airport, windFromDeg);
+  }
+
+  requestDepartureSlot(
+    ops: AirportOpsState,
+    ac: TrafficAircraft,
+  ): { ok: boolean; runwayId: string; waitSec: number } {
+    return requestDepartureSlot(ops, ac);
+  }
+
+  requestArrivalSlot(
+    ops: AirportOpsState,
+    ac: TrafficAircraft,
+  ): { ok: boolean; runwayId: string; waitSec: number } {
+    return requestArrivalSlot(ops, ac);
+  }
+
+  releaseRunway(ops: AirportOpsState, runwayId: string, acId: string): void {
+    releaseRunway(ops, runwayId, acId);
+  }
+
+  selectActiveRunway(airport: Airport): string {
+    return primaryRunway(airport).id;
+  }
+
+  runwayBusy(ops: AirportOpsState, runwayId: string): boolean {
+    return !!ops.runways.find((entry) => entry.runwayId === runwayId)?.occupiedBy;
+  }
+}

@@ -104,6 +104,7 @@ export function CameraController({
   const focusLatLng = useRef({ lat: 20, lng: 0 });
   const telemetryThrottle = useRef(0);
   const appMode = useEarthAppMode();
+  const initializedNepal = useRef(false);
 
   /** Clamp lat/lng to Nepal bounds in game mode */
   const clampToNepalBounds = (lat: number, lng: number) => {
@@ -188,6 +189,47 @@ export function CameraController({
     camera.far = 400;
     camera.updateProjectionMatrix();
   }, [camera]);
+
+  // Initialize camera to Nepal in game mode
+  useEffect(() => {
+    if (appMode !== "game" || initializedNepal.current || !controlsRef.current) return;
+    
+    // Wait a bit for the scene to be ready
+    const timer = setTimeout(() => {
+      if (!controlsRef.current) return;
+      
+      initializedNepal.current = true;
+      const NEPAL_LAT = 28.3949;
+      const NEPAL_LNG = 84.1240;
+      const NEPAL_ALTITUDE_M = 100000; // 100km starting altitude
+      
+      // Calculate Nepal position in world space
+      const nepalFocus = surfaceFocusWorld(NEPAL_LAT, NEPAL_LNG, tmpWorld.current);
+      const nepalOrbit = altitudeMToOrbitDistance(NEPAL_ALTITUDE_M);
+      
+      // Position camera ABOVE Nepal looking DOWN (not at the side)
+      // The camera should be along the normal vector from Earth's center through Nepal
+      const camPos = nepalFocus.clone().normalize().multiplyScalar(1 + nepalOrbit);
+      
+      // Set camera position and look at Nepal surface
+      camera.position.copy(camPos);
+      controlsRef.current.target.copy(nepalFocus);
+      focusLatLng.current = { lat: NEPAL_LAT, lng: NEPAL_LNG };
+      
+      // Make camera look directly at the focus point
+      camera.lookAt(nepalFocus);
+      camera.updateProjectionMatrix();
+      controlsRef.current.update();
+      
+      console.log("Nepal camera initialized:", {
+        camPos: camPos.toArray(),
+        target: nepalFocus.toArray(),
+        altitude: NEPAL_ALTITUDE_M
+      });
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [appMode, camera]);
 
   const beginSolarFly = (body: string) => {
     if (!controlsRef.current) return false;
@@ -406,6 +448,10 @@ export function CameraController({
       event.preventDefault();
       const altitudeM = useEarthStore.getState().altitudeM;
       const sens = zoomSensitivity(altitudeM) * CAMERA_ZOOM_SPEED;
+      
+      // Reduce zoom speed in game mode to prevent accidental crash-inducing zooms
+      const gameModeFactor = appMode === "game" ? 0.3 : 1.0;
+      
       // Normalize wheel deltas so trackpads / mice feel similar and less snappy
       let steps = event.deltaY;
       if (event.deltaMode === 1) steps *= 16; // lines → pixels-ish
@@ -413,12 +459,12 @@ export function CameraController({
       const clamped = MathUtils.clamp(steps, -120, 120);
       const direction = Math.sign(clamped) || 1;
       const magnitude = Math.min(1, Math.abs(clamped) / 100);
-      zoomVelocity.current += direction * sens * magnitude;
+      zoomVelocity.current += direction * sens * magnitude * gameModeFactor;
       setIdleRotation(false);
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [gl, setIdleRotation]);
+  }, [gl, setIdleRotation, appMode]);
 
   // Double-click / double-tap fly-in
   useEffect(() => {
@@ -584,10 +630,18 @@ export function CameraController({
     }
 
     const targetLen = controls.target.length();
+    
+    // In game mode, enforce HIGHER minimum altitude to prevent OOM crashes
+    let gameMinDistance = CAMERA_MIN_DISTANCE;
+    if (appMode === "game") {
+      const MIN_GAME_ALT_SCENE_UNITS = 60_000 / EARTH_RADIUS_M; // 60km minimum for stability
+      gameMinDistance = Math.max(CAMERA_MIN_DISTANCE, 1 + MIN_GAME_ALT_SCENE_UNITS);
+    }
+    
     minClearanceRef.current = solarCam
       ? 0.35
       : Math.max(
-          CAMERA_MIN_DISTANCE,
+          gameMinDistance,
           minOrbitDistance(targetLen, floorR),
         );
     controls.minDistance = minClearanceRef.current;
@@ -814,16 +868,34 @@ export function CameraController({
         : camera.position.clone().normalize(),
       tmpLocal.current,
     );
-    let focus = vector3ToLatLng(focusLocal);
-    
-    // Clamp focus to Nepal bounds in game mode
+    const unclampedFocus = vector3ToLatLng(focusLocal);
+    let focus = unclampedFocus;
+
+    // Clamp focus to Nepal bounds in game mode and hard-correct the control target
+    // so telemetry and camera view stay in sync.
     if (appMode === "game") {
-      focus = clampToNepalBounds(focus.lat, focus.lng);
-      // Update control target to match clamped position
-      const clampedFocusWorld = surfaceFocusWorld(focus.lat, focus.lng, tmpWorld.current);
-      if (controls.target.lengthSq() > 0.01) {
-        controls.target.lerp(clampedFocusWorld, 0.15);
+      const clamped = clampToNepalBounds(unclampedFocus.lat, unclampedFocus.lng);
+      const movedByClamp =
+        Math.abs(clamped.lat - unclampedFocus.lat) > 1e-6 ||
+        Math.abs(clamped.lng - unclampedFocus.lng) > 1e-6;
+
+      if (movedByClamp) {
+        const prevTarget = controls.target.clone();
+        const clampedFocusWorld = surfaceFocusWorld(
+          clamped.lat,
+          clamped.lng,
+          tmpWorld.current,
+        );
+        controls.target.copy(clampedFocusWorld);
+
+        // Keep the current camera offset when clamping, unless a fly animation is running.
+        if (!flying.current) {
+          const deltaTarget = clampedFocusWorld.clone().sub(prevTarget);
+          camera.position.add(deltaTarget);
+        }
       }
+
+      focus = clamped;
     }
     focusLatLng.current = focus;
 
@@ -856,7 +928,7 @@ export function CameraController({
       zoomSpeed={0}
       panSpeed={CAMERA_PAN_SPEED}
       minDistance={CAMERA_MIN_DISTANCE}
-      maxDistance={appMode === "game" ? 1.5 : CAMERA_MAX_DISTANCE} // Restrict max distance in game mode
+      maxDistance={appMode === "game" ? 1.35 : CAMERA_MAX_DISTANCE} // Restrict max distance in game mode to keep Nepal focused
       minPolarAngle={CAMERA_MIN_POLAR}
       maxPolarAngle={CAMERA_MAX_POLAR}
       enablePan

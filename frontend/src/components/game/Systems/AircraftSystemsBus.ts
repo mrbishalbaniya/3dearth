@@ -29,16 +29,19 @@ export function createAircraftSystems(spec: AircraftSpec): {
     spec.maxThrustN,
     spec.fuelBurnKgS,
   );
-  const engines = engineSpecs.map((e) => createEngineState(e, true));
+  const engines = engineSpecs.map((e) => createEngineState(e, false));
   const fuel = createFuelSystem(spec.fuelCapacityKg, 0.85);
+  for (const tank of fuel.tanks) {
+    tank.pumpOn = false;
+  }
   const emptyMassKg = spec.massKg; // treat published mass as OE W approx
   return {
     ctx: { engineSpecs },
     state: {
       engines,
       fuel,
-      electrical: createElectrical(true),
-      hydraulic: createHydraulic(true),
+      electrical: createElectrical(false),
+      hydraulic: createHydraulic(false),
       gear: createGear(true),
       emptyMassKg,
       totalMassKg: emptyMassKg + fuel.totalKg,
@@ -63,33 +66,59 @@ export function stepAircraftSystems(
     flapsCmd = flapsCmd < 0.25 ? 0.5 : flapsCmd < 0.75 ? 1 : 0;
   }
 
+  const electricalInput = {
+    batteryOn: input.batteryOn ?? state.electrical.batteryOn,
+    avionicsOn: input.avionicsOn ?? state.electrical.avionicsOn,
+  };
+  const fuelTanks = state.fuel.tanks.map((tank) => ({
+    ...tank,
+    pumpOn:
+      tank.id === "left"
+        ? input.fuelPumpLeft ?? tank.pumpOn
+        : tank.id === "right"
+          ? input.fuelPumpRight ?? tank.pumpOn
+          : input.fuelPumpCenter ?? tank.pumpOn,
+  }));
+
   // Electrical first (starter / bus)
-  let electrical = stepElectrical(state.electrical, {
+  let electrical = stepElectrical(
+    {
+      ...state.electrical,
+      ...electricalInput,
+    },
+    {
     enginesProducing: state.engines.some(
       (e) => e.phase === "running" || e.phase === "idle",
     ),
     loadAmps: 25 + (state.electrical.avionicsOn ? 15 : 0),
     dt: t,
-  });
+    },
+  );
 
   // Engines
   const throttle =
     Math.min(1, Math.max(0, flight.throttle + input.throttle * t * 0.55));
   const engines = state.engines.map((eng, i) => {
     const spec = ctx.engineSpecs[i] ?? ctx.engineSpecs[0];
+    const starterRequest =
+      i === 0
+        ? input.starterLeft ?? false
+        : i === 1
+          ? input.starterRight ?? false
+          : false;
     return stepEngine(eng, spec, {
       throttleLever: throttle,
       altM: flight.altM,
       tasMs: flight.airspeedMs,
       fuelAvailable: !state.fuel.starved && state.fuel.totalKg > 0.5,
       busLive: electrical.busLive,
-      starterRequest: false,
+      starterRequest,
       dt: t,
     });
   });
 
   const demandFuel = engines.reduce((s, e) => s + e.fuelFlowKgS, 0);
-  const burned = burnFuel(state.fuel, demandFuel, t);
+  const burned = burnFuel({ ...state.fuel, tanks: fuelTanks }, demandFuel, t);
 
   // Hydraulic
   const hydDemand =

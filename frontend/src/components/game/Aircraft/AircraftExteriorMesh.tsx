@@ -20,6 +20,7 @@ export function AircraftExteriorMesh({
   spec: AircraftSpec;
   hideCabin?: boolean;
 }) {
+  const twinOtter = spec.id === "dhc6_twin_otter";
   const def = useMemo(
     () => getExteriorModelDef(spec.id, spec),
     [spec],
@@ -43,5 +44,5 @@ export function AircraftExteriorMesh({
     return <ProceduralAircraftMesh spec={spec} hideCabin={false} />;
   }
 
-  return <ProceduralAircraftMesh spec={spec} hideCabin={false} />;
+  return <ProceduralAircraftMesh spec={spec} hideCabin={hideCabin && !twinOtter ? true : false} />;
 }

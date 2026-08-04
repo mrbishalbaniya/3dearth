@@ -1,7 +1,7 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Group } from "three";
 import { Atmosphere } from "./Atmosphere";
 import { CameraController } from "./CameraController";
@@ -26,6 +26,46 @@ import { FlightMode } from "../game/FlightMode";
 import { useGameStore } from "../game/store/gameStore";
 import { NepalMarkers } from "../game/NepalGame";
 import { useEarthAppMode } from "./appMode";
+import { NepalFlightDemo } from "./flight/NepalFlightDemo";
+import { AirportScene } from "./airport";
+import { SAMPLE_KATHMANDU_BUILDINGS } from "./city3d/sampleData";
+import { latLngToVector3 } from "./utils/geo";
+import { EARTH_RADIUS } from "./utils/constants";
+
+function KathmanduCity3DMarkers() {
+  const markers = useMemo(
+    () =>
+      SAMPLE_KATHMANDU_BUILDINGS.slice(0, 64)
+        .map((building) => {
+          const center = building.geometry?.[0];
+          if (!center) return null;
+
+          const levels = Number.parseFloat(building.tags["building:levels"] || "2");
+          const heightM = Number.parseFloat(building.tags.height || "") || levels * 2.5;
+          const heightUnits = Math.max(0.0005, heightM / 6_371_000);
+          const position = latLngToVector3(center.lat, center.lon, EARTH_RADIUS * 1.0018);
+
+          return {
+            id: building.id,
+            position,
+            heightUnits,
+          };
+        })
+        .filter((item): item is { id: number; position: ReturnType<typeof latLngToVector3>; heightUnits: number } => item !== null),
+    [],
+  );
+
+  return (
+    <group name="kathmandu-city3d-markers">
+      {markers.map((marker) => (
+        <mesh key={marker.id} position={marker.position}>
+          <boxGeometry args={[0.001, marker.heightUnits, 0.001]} />
+          <meshStandardMaterial color="#9da0a3" roughness={0.65} metalness={0.2} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
 
 interface EarthWorldProps {
   quality: EarthQualityProfile;
@@ -41,6 +81,7 @@ function EarthWorld({ quality }: EarthWorldProps) {
   const setIdleRotation = useEarthStore((s) => s.setIdleRotation);
   const flightMode = useGameStore((s) => s.mode === "flight");
   const appMode = useEarthAppMode();
+  const layers = useEarthStore((s) => s.layers);
 
   useEffect(() => {
     if (flightMode) {
@@ -50,7 +91,7 @@ function EarthWorld({ quality }: EarthWorldProps) {
       rotationYRef.current = 0;
       if (rotatingGroup.current) rotatingGroup.current.rotation.y = 0;
     }
-  }, [flightMode, setIdleRotation]);
+  }, [flightMode, setIdleRotation, appMode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,8 +109,11 @@ function EarthWorld({ quality }: EarthWorldProps) {
         setReady(true);
         setLoadingProgress(100);
       })
-      .catch(() => {
-        if (!cancelled) setLoadingProgress(100);
+      .catch((error) => {
+        console.error("Failed to load textures:", error);
+        if (!cancelled) {
+          setLoadingProgress(100);
+        }
       });
 
     return () => {
@@ -98,19 +142,25 @@ function EarthWorld({ quality }: EarthWorldProps) {
     }
   });
 
-  if (!textures) return null;
+  if (!textures) {
+    return (
+      <>
+        {/* Show a simple placeholder while loading */}
+        <mesh>
+          <sphereGeometry args={[1, 32, 32]} />
+          <meshBasicMaterial color="blue" wireframe />
+        </mesh>
+        <ambientLight intensity={0.5} />
+      </>
+    );
+  }
 
   return (
     <>
       <EarthEngineBridge />
       <Lighting sun={sun} quality={quality} />
-      <Stars quality={quality} />
-      <SolarSystem sunDirection={sun.direction} sunColor={sun.color} />
-      <Moon
-        sunDirection={sun.direction}
-        segments={quality.id === "low" ? 32 : 56}
-      />
-
+      
+      {/* Simplified rendering for game mode */}
       <group ref={rotatingGroup}>
         <Earth
           textures={textures}
@@ -119,30 +169,31 @@ function EarthWorld({ quality }: EarthWorldProps) {
           quality={quality}
           rotationYRef={rotationYRef}
         />
-        <DryEarthSystem
-          textures={textures}
-          sunDirection={sun.direction}
-        />
-        <LayerManager quality={quality} />
-        <WeatherSystem sunElevation={sun.direction.y} />
-        {/* Nepal game markers - only show in game mode */}
+        
+        {/* Only essential components for game mode */}
         {appMode === "game" && <NepalMarkers />}
-        {/* Must live in the same frame as the globe / GIS tiles */}
+        {appMode === "game" && <LayerManager quality={quality} />}
+        {appMode === "game" && <KathmanduCity3DMarkers />}
+        {appMode === "game" && <AirportScene />}
+
+        {/* Mount full flight simulation systems when game mode enters flight */}
         <FlightMode earthRotationY={rotationYRef} />
       </group>
 
-      <Clouds
-        texture={textures.clouds}
-        sunDirection={sun.direction}
-        quality={quality}
-        earthRotationY={rotationYRef}
-      />
+      {appMode === "game" && (
+        <NepalFlightDemo
+          active={flightMode}
+          qualityLevel="low"
+          showDomesticRoutes
+          showMountainFlights={false}
+          speedMultiplier={1.25}
+        />
+      )}
 
-      <Atmosphere sunDirection={sun.direction} quality={quality} />
+      {layers.atmosphere && (
+        <Atmosphere sunDirection={sun.direction} quality={quality} />
+      )}
       <CameraController earthRotationY={rotationYRef} />
-      <CountryInteraction earthRotationY={rotationYRef} />
-
-      {!flightMode && <PostFX quality={quality} />}
     </>
   );
 }

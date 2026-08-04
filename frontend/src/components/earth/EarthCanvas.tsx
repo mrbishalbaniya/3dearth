@@ -117,6 +117,19 @@ export function EarthCanvas({ mode = "observatory" }: EarthCanvasProps) {
   const setFullscreen = useEarthStore((s) => s.setFullscreen);
   const isReady = useEarthStore((s) => s.isReady);
 
+  // Calculate initial camera position for Nepal game mode
+  const initialCameraPosition = mode === "game" 
+    ? [0, 0, 1.8] as [number, number, number] // Nepal - positioned above, looking down
+    : [0, 0.55, CAMERA_DEFAULT_DISTANCE] as [number, number, number];
+
+  // Force lower quality in game mode to prevent crashes
+  useEffect(() => {
+    if (mode === "game") {
+      const store = useEarthStore.getState();
+      store.setQualityId("low"); // Force low quality in game mode for maximum performance
+    }
+  }, [mode]);
+
   useEffect(() => {
     const onFs = () => setFullscreen(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", onFs);
@@ -167,7 +180,7 @@ export function EarthCanvas({ mode = "observatory" }: EarthCanvasProps) {
           <EarthEngineProvider>
             <Canvas
               className="earth-canvas"
-              dpr={quality.dpr}
+              dpr={mode === "game" ? 0.5 : quality.dpr} // Force 0.5 DPR in game mode
               gl={{
                 antialias: false,
                 alpha: false,
@@ -178,7 +191,7 @@ export function EarthCanvas({ mode = "observatory" }: EarthCanvasProps) {
                 preserveDrawingBuffer: false,
               }}
               camera={{
-                position: [0, 0.55, CAMERA_DEFAULT_DISTANCE],
+                position: initialCameraPosition,
                 fov: 45,
                 near: 0.01,
                 far: 200,

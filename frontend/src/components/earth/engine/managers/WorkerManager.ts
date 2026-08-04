@@ -24,10 +24,16 @@ export class WorkerManager implements EngineManager {
 
   init(engine: EarthEngine): void {
     this.engine = engine;
+    if (typeof window === "undefined" || typeof Worker === "undefined") {
+      this.engine.logger.info(this.id, "workers unavailable in this runtime; using fallbacks");
+      return;
+    }
+
     const isMobile =
       typeof navigator !== "undefined" &&
       /Mobi|Android|iPhone/i.test(navigator.userAgent);
-    const n = isMobile ? 1 : Math.min(2, navigator.hardwareConcurrency || 2);
+    const hw = typeof navigator !== "undefined" ? navigator.hardwareConcurrency || 2 : 2;
+    const n = isMobile ? 1 : Math.min(2, hw);
     for (let i = 0; i < n; i++) {
       this.spawn("geo");
     }

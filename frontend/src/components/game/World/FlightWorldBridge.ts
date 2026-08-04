@@ -12,8 +12,10 @@ export function syncFlightToEarth(state: FlightState) {
   const ground = peekElevation(state.lat, state.lng) ?? airportElev ?? null;
 
   // LOD expects height above terrain — never treat highland MSL as AGL when DEM is cold
+  // Keep telemetry in map-readable bands so zoom does not collapse to street-level
+  // at flight start or during transient DEM misses.
   const aglM =
-    ground != null ? Math.max(25, state.altM - ground) : 80;
+    ground != null ? Math.max(900, state.altM - ground) : 1200;
 
   const level = altitudeToZoomLevel(aglM);
   useEarthStore.getState().setTelemetry({

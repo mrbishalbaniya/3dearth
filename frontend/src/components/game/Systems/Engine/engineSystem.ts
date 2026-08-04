@@ -49,6 +49,28 @@ export function enginesForClass(
       },
     ];
   }
+  if (aircraftClass === "turboprop_twin") {
+    return [
+      {
+        id: "eng-L",
+        kind: "turboprop",
+        maxThrustN: maxThrustN * 0.5,
+        idleFuelKgS: fuelBurnKgS * 0.12,
+        maxFuelKgS: fuelBurnKgS * 0.5,
+        densityExponent: 0.88,
+        staticThrustFactor: 1.55,
+      },
+      {
+        id: "eng-R",
+        kind: "turboprop",
+        maxThrustN: maxThrustN * 0.5,
+        idleFuelKgS: fuelBurnKgS * 0.12,
+        maxFuelKgS: fuelBurnKgS * 0.5,
+        densityExponent: 0.88,
+        staticThrustFactor: 1.55,
+      },
+    ];
+  }
   if (aircraftClass === "business_jet" || aircraftClass === "airliner") {
     const twin = aircraftClass === "airliner";
     const n = twin ? 2 : 2;

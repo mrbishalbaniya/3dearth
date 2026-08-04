@@ -6,18 +6,21 @@ import { EarthEngine } from "../core/EarthEngine";
 const Ctx = createContext<EarthEngine | null>(null);
 
 export function EarthEngineProvider({ children }: { children: ReactNode }) {
-  const engine = useMemo(() => EarthEngine.shared.init(), []);
+  // Never initialize during render; client components can still render on server.
+  const engine = useMemo(() => EarthEngine.shared, []);
 
   useEffect(() => {
+    engine.init();
     return () => {
       // Keep shared engine for HMR stability
     };
-  }, []);
+  }, [engine]);
 
   return <Ctx.Provider value={engine}>{children}</Ctx.Provider>;
 }
 
 export function useEarthEngine(): EarthEngine {
   const ctx = useContext(Ctx);
-  return ctx ?? EarthEngine.shared.init();
+  // Return shared instance without side effects; provider effect performs init.
+  return ctx ?? EarthEngine.shared;
 }

@@ -156,10 +156,11 @@ export function FlightCameraController({
         persp.fov = 55;
         persp.updateProjectionMatrix();
       }
-      const back = m(55 + Math.min(aglM * 0.08, 120));
-      const up = m(18 + Math.min(aglM * 0.03, 40));
+      // Map-first chase profile: keep enough distance/height to preserve 3D map readability.
+      const back = m(550 + Math.min(aglM * 0.35, 4200));
+      const up = m(220 + Math.min(aglM * 0.16, 2200));
       _cam.copy(_pos).addScaledVector(_fwd, -back).addScaledVector(_up, up);
-      _look.copy(_pos).addScaledVector(_fwd, m(25));
+      _look.copy(_pos).addScaledVector(_fwd, m(380));
     } else if (mode === "wing") {
       _cam
         .copy(_pos)

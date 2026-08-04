@@ -42,6 +42,13 @@ const REGISTRY: Record<string, ExteriorModelDef> = {
     scale: 1,
     rotation: [0, -Math.PI / 2, 0],
   },
+  dhc6_twin_otter: {
+    aircraftId: "dhc6_twin_otter",
+    url: "/models/aircraft/dhc6_twin_otter.glb",
+    scale: 1,
+    rotation: [0, -Math.PI / 2, 0],
+    credit: "DHC-6 Twin Otter stand-in. Add a licensed GLB under /public/models/aircraft/ to override the procedural airframe.",
+  },
 };
 
 export function getExteriorModelDef(

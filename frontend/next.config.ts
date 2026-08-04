@@ -11,6 +11,57 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "cdn.jsdelivr.net",
       },
+      // NASA API domains
+      {
+        protocol: "https",
+        hostname: "apod.nasa.gov",
+      },
+      {
+        protocol: "https",
+        hostname: "api.nasa.gov",
+      },
+      {
+        protocol: "https",
+        hostname: "mars.nasa.gov",
+      },
+      {
+        protocol: "https",
+        hostname: "mars.jpl.nasa.gov",
+      },
+      {
+        protocol: "https",
+        hostname: "images-api.nasa.gov",
+      },
+      {
+        protocol: "https",
+        hostname: "images-assets.nasa.gov",
+      },
+      {
+        protocol: "https",
+        hostname: "epic.gsfc.nasa.gov",
+      },
+      // Additional NASA and space-related domains
+      {
+        protocol: "https",
+        hostname: "www.nasa.gov",
+      },
+      {
+        protocol: "https",
+        hostname: "hubblesite.org",
+      },
+      {
+        protocol: "https",
+        hostname: "jwst.nasa.gov",
+      },
+      // Mars rover photo domains
+      {
+        protocol: "https",
+        hostname: "mars-photos.s3.amazonaws.com",
+      },
+      {
+        protocol: "https",
+        hostname: "photojournal.jpl.nasa.gov",
+      }
     ],
   },
   async rewrites() {
